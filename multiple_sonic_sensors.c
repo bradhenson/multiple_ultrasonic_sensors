@@ -45,10 +45,19 @@ TODO
 void initializeUART(int baud);
 void transmitByte(unsigned char data);
 void printString(const char myString[]);
+uint16_t sensorOnePing(void);
+uint16_t sensorTwoPing(void);
+uint16_t sensorThreePing(void);
+uint16_t sensorFourPing(void);
+uint16_t sensorFivePing(void);
+uint16_t sensorSixPing(void);
+uint16_t sensorSevenPing(void);
+uint16_t sensorEightPing(void);
 
 //Global Variables
 int numberCycles = 0;
 int timeElasped = 0;
+uint16_t distance = 0;
 uint16_t distanceOne = 0;
 uint16_t distanceTwo = 0;
 uint16_t distanceThree = 0;
@@ -59,6 +68,22 @@ uint16_t distanceSeven = 0;
 uint16_t distanceEight = 0;
 uint8_t pinChangeFlag = 0;
 uint8_t timeOut = 0;
+uint8_t distanceOneHigh = 0;
+uint8_t distanceOneLow = 0;
+uint8_t distanceTwoHigh = 0;
+uint8_t distanceTwoLow = 0;
+uint8_t distanceThreeHigh = 0;
+uint8_t distanceThreeLow = 0;
+uint8_t distanceFourHigh = 0;
+uint8_t distanceFourLow = 0;
+uint8_t distanceFiveHigh = 0;
+uint8_t distanceFiveLow = 0;
+uint8_t distanceSixHigh = 0;
+uint8_t distanceSixLow = 0;
+uint8_t distanceSevenHigh = 0;
+uint8_t distanceSevenLow = 0;
+uint8_t distanceEightHigh = 0;
+uint8_t distanceEightLow = 0;
 
 int main(void)
 {
@@ -68,7 +93,10 @@ int main(void)
 							
 ********************************************************************************/
 
-//Sets the all of the trigger pins as outputs and all of the echo pin as inputs
+/******************************************************************
+Sets the all of the trigger pins as outputs and all of the echo 
+pin as inputs
+******************************************************************/
 DDRC |= (1 << SensorOneTrigger);
 DDRC &= ~(1 << SensorOneEcho);
 DDRC |= (1 << SensorTwoTrigger);
@@ -86,8 +114,11 @@ DDRD &= ~(1 << SensorSevenEcho);
 DDRD |= (1 << SensorEightTrigger); 
 DDRD &= ~(1 << SensorEightEcho);
 
-//Sets of the pins being used to a state of zero, it could be augured that this 
-//step is not needed, but it is better to initialize all the pins to a known state.
+/******************************************************************
+Sets of the pins being used to a state of zero, it could be augured 
+that this step is not needed, but it is better to initialize all 
+the pins to a known state.			
+******************************************************************/
 PORTC &= ~(1 << SensorOneTrigger) | (1 << SensorOneEcho);
 PORTC &= ~(1 << SensorTwoTrigger) | (1 << SensorTwoEcho);
 PORTC &= ~(1 << SensorThreeTrigger) | (1 << SensorThreeEcho);
@@ -100,20 +131,24 @@ PORTD &= ~(1 << SensorEightTrigger) | (1 << SensorEightEcho);
 initializeUART(9600);
 sei();
 
-//Need to initialize the timer/counter here
-//TCCR1A bits 0 and 1 need to be set to zero for normal mode.
-//TCCR1B bits x and x need to be set to zero for normal mode.
-//Technically they should already be zero, but this ensures they are.
+/******************************************************************
+Need to initialize the timer/counter here
+TCCR1A bits 0 and 1 need to be set to zero for normal mode.
+TCCR1B bits x and x need to be set to zero for normal mode.
+Technically they should already be zero, but this ensures they are.			
+******************************************************************/
 TCCR1A &= ~(1 << WGM10) | (1 << WGM11);
 TCCR1B &= ~(1 << WGM12) | (1 << WGM12);
 TCCR1B &= ~(1 << CS10) | (1 << CS11) | (1 << CS12); //No Pre-Scaler for the clk
 
-//Need to enable Pin Change Interrupts on basically all the pins
-//PCICR is the Pin Change Interrupt Control Register, the following three bits
-//control which bank of pins is enabled for Pin change interrupts:
-//PCIE0 controls pins 0-7
-//PCIE1 controls pins 8-14
-//PCIE2 controls pins 16-23
+/******************************************************************
+Need to enable Pin Change Interrupts on basically all the pins
+PCICR is the Pin Change Interrupt Control Register, the following three bits
+control which bank of pins is enabled for Pin change interrupts:
+PCIE0 controls pins 0-7
+PCIE1 controls pins 8-14
+PCIE2 controls pins 16-23			
+******************************************************************/
 PCICR |= (1 << PCIE0) | (1 << PCIE1) | (1 << PCIE1);
 
 /********************************************************************************
@@ -123,9 +158,64 @@ PCICR |= (1 << PCIE0) | (1 << PCIE1) | (1 << PCIE1);
 ********************************************************************************/	
     while (1) 
     {
+	   /******************************************************************
+		First we capture the distance in a 16 bit integer by sending a ping
+		So that we can transmit this data one byte at a time, we separate the
+		16 bit integer into a high and low 8 bit integer.
+		to reassemble this one the receive side use something like:
+		distance = (distanceOneHigh << 8) | distanceOneLow				
+	   ******************************************************************/		
+		distanceOne = sensorOnePing();
+		distanceOneLow = distanceOne & 0xFF;
+		distanceOneHigh = (distanceOne >> 8) & 0xFF;
 		
+		distanceTwo = sensorTwoPing();
+		distanceTwoLow = distanceTwo & 0xFF;
+		distanceTwoHigh = (distanceTwo >> 8) & 0xFF;
 		
+		distanceTwo = sensorTwoPing();
+		distanceTwoLow = distanceTwo & 0xFF;
+		distanceTwoHigh = (distanceTwo >> 8) & 0xFF;
 		
+		distanceTwo = sensorTwoPing();
+		distanceTwoLow = distanceTwo & 0xFF;
+		distanceTwoHigh = (distanceTwo >> 8) & 0xFF;
+		
+		distanceTwo = sensorTwoPing();
+		distanceTwoLow = distanceTwo & 0xFF;
+		distanceTwoHigh = (distanceTwo >> 8) & 0xFF;
+		
+		distanceTwo = sensorTwoPing();
+		distanceTwoLow = distanceTwo & 0xFF;
+		distanceTwoHigh = (distanceTwo >> 8) & 0xFF;
+		
+		distanceTwo = sensorTwoPing();
+		distanceTwoLow = distanceTwo & 0xFF;
+		distanceTwoHigh = (distanceTwo >> 8) & 0xFF;
+		
+		distanceTwo = sensorTwoPing();
+		distanceTwoLow = distanceTwo & 0xFF;
+		distanceTwoHigh = (distanceTwo >> 8) & 0xFF;
+
+	   /******************************************************************
+		Next we send each byte of data to the UART interface			
+	   ******************************************************************/	
+		transmitByte(distanceOneLow);
+		transmitByte(distanceOneHigh);
+		transmitByte(distanceTwoLow);
+		transmitByte(distanceTwoHigh);
+		transmitByte(distanceThreeLow);
+		transmitByte(distanceThreeHigh);
+		transmitByte(distanceFourLow);
+		transmitByte(distanceFourHigh);
+		transmitByte(distanceFiveLow);
+		transmitByte(distanceFiveHigh);
+		transmitByte(distanceSixLow);
+		transmitByte(distanceSixHigh);
+		transmitByte(distanceSevenLow);
+		transmitByte(distanceSevenHigh);
+		transmitByte(distanceEightLow);
+		transmitByte(distanceEightHigh);
     }
 }
 /********************************************************************************
@@ -177,7 +267,7 @@ Description:
 
 Returns: Nothing
 ********************************************************************************/
-int sensorOnePing(void)
+uint16_t sensorOnePing(void)
 {
 	//the hc-sr04 requires a 10 microsecond pulse to initiate the trigger
 	//we first set the pin low as a starting point and then high for 10 microseconds
@@ -220,7 +310,7 @@ int sensorOnePing(void)
 	   	//Convert the timeElasped into millimeters and store in distanceOne variable
 		//Something to keep in mind is that distanceOne is a 16 bit integer and 
 		//will round off to the nearest millimeter. This should be fine for this application
-	   	distanceOne = ((timeElasped*0.334)/2);
+	   	distance = ((timeElasped*0.334)/2);
 	   	
 	   	//Disable Pin Change Interrupt for sensor one
 	   	PCMSK1 &= ~(1 << PCINT12);
@@ -228,9 +318,9 @@ int sensorOnePing(void)
    else
    {
 	   //No return pulse was recorded, so the distance value is set to zero
-	   distanceOne = 0;
+	   distance = 0;
    } 
-	return distanceOne;
+	return distance;
 }
 
 /********************************************************************************
@@ -240,7 +330,7 @@ Description:
 
 Returns: Nothing
 ********************************************************************************/
-int sensorTwoPing(void)
+uint16_t sensorTwoPing(void)
 {
 	//the hc-sr04 requires a 10 microsecond pulse to initiate the trigger
 	//we first set the pin low as a starting point and then high for 10 microseconds
@@ -283,7 +373,7 @@ int sensorTwoPing(void)
 		//Convert the timeElasped into millimeters and store in distanceOne variable
 		//Something to keep in mind is that distanceOne is a 16 bit integer and
 		//will round off to the nearest millimeter. This should be fine for this application
-		distanceTwo = ((timeElasped*0.334)/2);
+		distance = ((timeElasped*0.334)/2);
 		
 		//Disable Pin Change Interrupt for sensor one
 		PCMSK1 &= ~(1 << PCINT10);
@@ -291,9 +381,9 @@ int sensorTwoPing(void)
 	else
 	{
 		//No return pulse was recorded, so the distance value is set to zero
-		distanceTwo = 0;
+		distance = 0;
 	}
-	return distanceTwo;
+	return distance;
 }
 
 /********************************************************************************
@@ -303,7 +393,7 @@ Description:
 
 Returns: Nothing
 ********************************************************************************/
-int sensorThreePing(void)
+uint16_t sensorThreePing(void)
 {
 	//the hc-sr04 requires a 10 microsecond pulse to initiate the trigger
 	//we first set the pin low as a starting point and then high for 10 microseconds
@@ -346,7 +436,7 @@ int sensorThreePing(void)
 		//Convert the timeElasped into millimeters and store in distanceOne variable
 		//Something to keep in mind is that distanceOne is a 16 bit integer and
 		//will round off to the nearest millimeter. This should be fine for this application
-		distanceThree = ((timeElasped*0.334)/2);
+		distance = ((timeElasped*0.334)/2);
 		
 		//Disable Pin Change Interrupt for sensor one
 		PCMSK1 &= ~(1 << PCINT8);
@@ -354,9 +444,9 @@ int sensorThreePing(void)
 	else
 	{
 		//No return pulse was recorded, so the distance value is set to zero
-		distanceThree = 0;
+		distance = 0;
 	}
-	return distanceThree;
+	return distance;
 }
 
 /********************************************************************************
@@ -366,15 +456,15 @@ Description:
 
 Returns: Nothing
 ********************************************************************************/
-int sensorFourPing(void)
+uint16_t sensorFourPing(void)
 {
 	//the hc-sr04 requires a 10 microsecond pulse to initiate the trigger
 	//we first set the pin low as a starting point and then high for 10 microseconds
-	PORTC &= ~(1 << SensorFourTrigger);
+	PORTB &= ~(1 << SensorFourTrigger);
 	_delay_us(5);
-	PORTC |= (1 << SensorFourTrigger);
+	PORTB |= (1 << SensorFourTrigger);
 	_delay_us(10);
-	PORTC &= ~(1 << SensorFourTrigger);
+	PORTB &= ~(1 << SensorFourTrigger);
 	//Clear the timer register, starts the counter
 	TCNT1 = 0x0000;
 	//Enables Pin Change Interrupt for sensor one
@@ -409,7 +499,7 @@ int sensorFourPing(void)
 		//Convert the timeElasped into millimeters and store in distanceOne variable
 		//Something to keep in mind is that distanceOne is a 16 bit integer and
 		//will round off to the nearest millimeter. This should be fine for this application
-		distanceFour = ((timeElasped*0.334)/2);
+		distance = ((timeElasped*0.334)/2);
 		
 		//Disable Pin Change Interrupt for sensor one
 		PCMSK0 &= ~(1 << PCINT4);
@@ -417,9 +507,9 @@ int sensorFourPing(void)
 	else
 	{
 		//No return pulse was recorded, so the distance value is set to zero
-		distanceFour = 0;
+		distance = 0;
 	}
-	return distanceFour;
+	return distance;
 }
 /********************************************************************************
 Name: sensorFivePing()
@@ -428,15 +518,15 @@ Description:
 
 Returns: Nothing
 ********************************************************************************/
-int sensorFivePing(void)
+uint16_t sensorFivePing(void)
 {
 	//the hc-sr04 requires a 10 microsecond pulse to initiate the trigger
 	//we first set the pin low as a starting point and then high for 10 microseconds
-	PORTC &= ~(1 << SensorFiveTrigger);
+	PORTB &= ~(1 << SensorFiveTrigger);
 	_delay_us(5);
-	PORTC |= (1 << SensorFiveTrigger);
+	PORTB |= (1 << SensorFiveTrigger);
 	_delay_us(10);
-	PORTC &= ~(1 << SensorFiveTrigger);
+	PORTB &= ~(1 << SensorFiveTrigger);
 	//Clear the timer register, starts the counter
 	TCNT1 = 0x0000;
 	//Enables Pin Change Interrupt for sensor one
@@ -471,7 +561,7 @@ int sensorFivePing(void)
 		//Convert the timeElasped into millimeters and store in distanceOne variable
 		//Something to keep in mind is that distanceOne is a 16 bit integer and
 		//will round off to the nearest millimeter. This should be fine for this application
-		distanceFive = ((timeElasped*0.334)/2);
+		distance = ((timeElasped*0.334)/2);
 		
 		//Disable Pin Change Interrupt for sensor one
 		PCMSK0 &= ~(1 << PCINT2);
@@ -479,9 +569,9 @@ int sensorFivePing(void)
 	else
 	{
 		//No return pulse was recorded, so the distance value is set to zero
-		distanceFive = 0;
+		distance = 0;
 	}
-	return distanceFive;
+	return distance;
 }
 
 /********************************************************************************
@@ -491,15 +581,15 @@ Description:
 
 Returns: Nothing
 ********************************************************************************/
-int sensorSixPing(void)
+uint16_t sensorSixPing(void)
 {
 	//the hc-sr04 requires a 10 microsecond pulse to initiate the trigger
 	//we first set the pin low as a starting point and then high for 10 microseconds
-	PORTC &= ~(1 << SensorSixTrigger);
+	PORTB &= ~(1 << SensorSixTrigger);
 	_delay_us(5);
-	PORTC |= (1 << SensorSixTrigger);
+	PORTB |= (1 << SensorSixTrigger);
 	_delay_us(10);
-	PORTC &= ~(1 << SensorSixTrigger);
+	PORTB &= ~(1 << SensorSixTrigger);
 	//Clear the timer register, starts the counter
 	TCNT1 = 0x0000;
 	//Enables Pin Change Interrupt for sensor one
@@ -534,7 +624,7 @@ int sensorSixPing(void)
 		//Convert the timeElasped into millimeters and store in distanceOne variable
 		//Something to keep in mind is that distanceOne is a 16 bit integer and
 		//will round off to the nearest millimeter. This should be fine for this application
-		distanceSix = ((timeElasped*0.334)/2);
+		distance = ((timeElasped*0.334)/2);
 		
 		//Disable Pin Change Interrupt for sensor one
 		PCMSK0 &= ~(1 << PCINT0);
@@ -542,9 +632,9 @@ int sensorSixPing(void)
 	else
 	{
 		//No return pulse was recorded, so the distance value is set to zero
-		distanceSix = 0;
+		distance = 0;
 	}
-	return distanceSix;
+	return distance;
 }
 
 /********************************************************************************
@@ -554,15 +644,15 @@ Description:
 
 Returns: Nothing
 ********************************************************************************/
-int sensorSevenPing(void)
+uint16_t sensorSevenPing(void)
 {
 	//the hc-sr04 requires a 10 microsecond pulse to initiate the trigger
 	//we first set the pin low as a starting point and then high for 10 microseconds
-	PORTC &= ~(1 << SensorSevenTrigger);
+	PORTD &= ~(1 << SensorSevenTrigger);
 	_delay_us(5);
-	PORTC |= (1 << SensorSevenTrigger);
+	PORTD |= (1 << SensorSevenTrigger);
 	_delay_us(10);
-	PORTC &= ~(1 << SensorSevenTrigger);
+	PORTD &= ~(1 << SensorSevenTrigger);
 	//Clear the timer register, starts the counter
 	TCNT1 = 0x0000;
 	//Enables Pin Change Interrupt for sensor one
@@ -597,7 +687,7 @@ int sensorSevenPing(void)
 		//Convert the timeElasped into millimeters and store in distanceOne variable
 		//Something to keep in mind is that distanceOne is a 16 bit integer and
 		//will round off to the nearest millimeter. This should be fine for this application
-		distanceSeven = ((timeElasped*0.334)/2);
+		distance = ((timeElasped*0.334)/2);
 		
 		//Disable Pin Change Interrupt for sensor one
 		PCMSK2 &= ~(1 << PCINT22);
@@ -605,9 +695,9 @@ int sensorSevenPing(void)
 	else
 	{
 		//No return pulse was recorded, so the distance value is set to zero
-		distanceSeven = 0;
+		distance = 0;
 	}
-	return distanceSeven;
+	return distance;
 }
 
 /********************************************************************************
@@ -617,15 +707,15 @@ Description:
 
 Returns: Nothing
 ********************************************************************************/
-int sensorEightPing(void)
+uint16_t sensorEightPing(void)
 {
 	//the hc-sr04 requires a 10 microsecond pulse to initiate the trigger
 	//we first set the pin low as a starting point and then high for 10 microseconds
-	PORTC &= ~(1 << SensorEightTrigger);
+	PORTD &= ~(1 << SensorEightTrigger);
 	_delay_us(5);
-	PORTC |= (1 << SensorEightTrigger);
+	PORTD |= (1 << SensorEightTrigger);
 	_delay_us(10);
-	PORTC &= ~(1 << SensorEightTrigger);
+	PORTD &= ~(1 << SensorEightTrigger);
 	//Clear the timer register, starts the counter
 	TCNT1 = 0x0000;
 	//Enables Pin Change Interrupt for sensor one
@@ -660,7 +750,7 @@ int sensorEightPing(void)
 		//Convert the timeElasped into millimeters and store in distanceOne variable
 		//Something to keep in mind is that distanceOne is a 16 bit integer and
 		//will round off to the nearest millimeter. This should be fine for this application
-		distanceEight = ((timeElasped*0.334)/2);
+		distance = ((timeElasped*0.334)/2);
 		
 		//Disable Pin Change Interrupt for sensor one
 		PCMSK2 &= ~(1 << PCINT20);
@@ -668,9 +758,9 @@ int sensorEightPing(void)
 	else
 	{
 		//No return pulse was recorded, so the distance value is set to zero
-		distanceEight = 0;
+		distance = 0;
 	}
-	return distanceEight;
+	return distance;
 }
 /********************************************************************************
 Name: initializeUART()
@@ -710,21 +800,4 @@ void transmitByte(unsigned char data)
 	//Wait until the Transmitter is ready
 	while (! (UCSR0A & (1 << UDRE0)) );
 	UDR0 = data;
-}
-
-/********************************************************************************
-Name: printString()
-
-Description: Allows user to the send a char array of bytes out the UART interface
-
-Returns:
-********************************************************************************/
-void printString(const char myString[])
-{
-	uint8_t i = 0;
-	while (myString[i])
-	{
-		transmitByte(myString[i]);
-		i++;
-	}
 }
